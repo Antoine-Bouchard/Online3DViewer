@@ -280,6 +280,15 @@ div.ov_measure_panel
 	top : 0px;
 }
 
+div.ov_identification_panel
+{
+	padding: 6px 15px;
+	position: absolute;
+	border-radius: 30px;
+	left : 0px;
+	top : 0px;
+}
+
 div.ov_measure_panel div.ov_svg_icon
 {
 	color: inherit;

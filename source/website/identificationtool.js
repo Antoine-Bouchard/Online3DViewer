@@ -1,6 +1,6 @@
-import { BigEps, IsEqualEps, RadDeg } from '../engine/geometry/geometry.js';
+
 import { AddDiv, ClearDomElement } from '../engine/viewer/domutils.js';
-import { AddSvgIconElement, IsDarkTextNeededForColor } from './utils.js';
+import { IsDarkTextNeededForColor } from './utils.js';
 
 import * as THREE from 'three';
 import { ColorComponentToFloat, RGBColor } from '../engine/model/color.js';
@@ -37,7 +37,7 @@ class Marker {
         const sphereGeo = new THREE.SphereGeometry(radius, 32, 16);
         const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
         const sphere = new THREE.Mesh(sphereGeo, sphereMaterial);
-        this.markerObject.add(sphere)
+        this.markerObject.add(sphere);
 
         this.UpdatePosition(intersection);
     }
@@ -62,26 +62,6 @@ class Marker {
     GetObject() {
         return this.markerObject;
     }
-}
-
-function CalculateMarkerValues(aMarker, bMarker) {
-    const aIntersection = aMarker.GetIntersection();
-    const bIntersection = bMarker.GetIntersection();
-    let result = {
-        pointsDistance: null,
-        parallelFacesDistance: null,
-        facesAngle: null
-    };
-
-    const aNormal = GetFaceWorldNormal(aIntersection);
-    const bNormal = GetFaceWorldNormal(bIntersection);
-    result.pointsDistance = aIntersection.point.distanceTo(bIntersection.point);
-    result.facesAngle = aNormal.angleTo(bNormal);
-    if (IsEqualEps(result.facesAngle, 0.0, BigEps) || IsEqualEps(result.facesAngle, Math.PI, BigEps)) {
-        let aPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(aNormal, aIntersection.point);
-        result.parallelFacesDistance = Math.abs(aPlane.distanceToPoint(bIntersection.point));
-    }
-    return result;
 }
 
 export class IdentificationTool {
@@ -128,9 +108,8 @@ export class IdentificationTool {
             return;
         }
 
-        if (this.markers.length === 3) {
-            // this.ClearMarkers();
-            return
+        if (this.markers.length >= 3) {
+            return;
         }
 
         this.AddMarker(intersection);
@@ -157,12 +136,6 @@ export class IdentificationTool {
     AddMarker(intersection) {
         let marker = this.GenerateMarker(intersection);
         this.markers.push(marker);
-        if (this.markers.length === 2) {
-            let material = CreateMaterial();
-            let aPoint = this.markers[0].GetIntersection().point;
-            let bPoint = this.markers[1].GetIntersection().point;
-            this.viewer.AddExtraObject(CreateLineFromPoints([aPoint, bPoint], material));
-        }
     }
 
     GenerateMarker(intersection) {
@@ -191,12 +164,6 @@ export class IdentificationTool {
             );
         }
 
-        function AddValue(panel, icon, title, value) {
-            let svgIcon = AddSvgIconElement(panel, icon, 'left_inline');
-            svgIcon.title = title;
-            AddDiv(panel, 'ov_measure_value', value);
-        }
-
         ClearDomElement(this.panel);
         if (this.settings.backgroundIsEnvMap) {
             this.panel.style.color = '#ffffff';
@@ -217,27 +184,8 @@ export class IdentificationTool {
         } else if (this.markers.length === 2) {
             this.panel.innerHTML = 'Select heel';
         } else {
-            this.panel.innerHTML = 'Check logs'
-            console.log(this.markers)
-
-            const sphereGeo = new THREE.SphereGeometry(0.5, 32, 16);
-            const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-            const sphere = new THREE.Mesh(sphereGeo, sphereMaterial);
-            this.viewer.AddExtraObject(sphere);
-
-            const origin = new THREE.Vector3(0, 0, 0);
-            const x = new THREE.Vector3(2, 0, 0);
-            const y = new THREE.Vector3(0, 2, 0);
-            const z = new THREE.Vector3(0, 0, 2);
-
-            const redMaterial = new THREE.LineBasicMaterial({ color: 0xff0000, depthTest: false });
-            const greenMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00, depthTest: false });
-            const blueMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff, depthTest: false });
-
-            this.viewer.AddExtraObject(CreateLineFromPoints([origin, x], redMaterial));
-            this.viewer.AddExtraObject(CreateLineFromPoints([origin, y], greenMaterial));
-            this.viewer.AddExtraObject(CreateLineFromPoints([origin, z], blueMaterial));
-
+            this.panel.innerHTML = 'Check logs';
+            console.log(this.markers);
         }
         this.Resize();
     }

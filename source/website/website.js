@@ -554,7 +554,7 @@ export class Website {
         this.measureTool.SetButton(measureToolButton);
 
         let identificationToolButton = AddPushButton(this.toolbar, 'identification', 'Identification', ['only_full_width', 'only_on_model'], (isSelected) => {
-            HandleEvent('measure_tool_activated', isSelected ? 'on' : 'off');
+            HandleEvent('identification_tool_activated', isSelected ? 'on' : 'off');
             this.navigator.SetSelection(null);
             this.identificationTool.SetActive(isSelected);
         });
