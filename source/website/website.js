@@ -24,6 +24,7 @@ import { ShadingType } from '../engine/threejs/threeutils.js';
 import { MeasureTool } from './measuretool.js';
 import { IdentificationTool } from './identificationtool.js';
 import { CloseAllDialogs } from './dialog.js';
+import { ThreeModelLoader } from '../engine/threejs/threemodelloader.js';
 
 import * as THREE from 'three';
 
@@ -81,6 +82,18 @@ export class Website {
 
         window.addEventListener('resize', () => {
             this.Resize();
+        });
+
+        window.addEventListener('message', (event) => {
+            const inputFiles = event.data.value.map(file =>
+            ({
+                name: file.name,
+                source: 3,
+                data: file.arrayBuffer
+            }));
+            // this.LoadModelFromInputFiles(inputFiles, this.settings);
+
+            this.AddMeshFromInputFiles(inputFiles);
         });
     }
 
@@ -360,6 +373,67 @@ export class Website {
         let inputFiles = InputFilesFromFileObjects(files);
         this.LoadModelFromInputFiles(inputFiles, importSettings);
         this.ClearHashIfNotOnlyUrlList();
+    }
+
+    AddMeshFromInputFiles(files) {
+        if (files === null || files.length === 0) {
+            return null;
+        }
+
+        this.viewer.Clear();
+        let settings = new ImportSettings();
+        if (this.parameters.defaultColor) {
+            settings.defaultColor = this.parameters.defaultColor;
+        }
+
+        let progressDiv = null;
+        let loader = new ThreeModelLoader();
+        loader.LoadModel(files, settings, {
+            onLoadStart: () => {
+                // this.canvas.style.display = 'none';
+                // progressDiv = document.createElement('div');
+                // progressDiv.innerHTML = 'Loading model...';
+                // this.parentElement.appendChild(progressDiv);
+            },
+            onFileListProgress: (current, total) => { },
+            onFileLoadProgress: (current, total) => { },
+            onImportStart: () => {
+                // progressDiv.innerHTML = 'Importing model...';
+            },
+            onVisualizationStart: () => {
+                // progressDiv.innerHTML = 'Visualizing model...';
+            },
+            onModelFinished: (importResult, threeObject) => {
+
+                this.model = importResult.model;
+
+                this.viewer.SetMainObject(threeObject);
+                this.viewer.SetUpVector(Direction.Y, false);
+                this.navigator.FillTree(importResult);
+                this.UpdateSidebar();
+                this.FitModelToWindow(true);
+
+                HandleEvent('model_loaded', 'stl');
+                this.SetUIState(WebsiteUIState.Model);
+            },
+            onTextureLoaded: () => {
+                this.viewer.Render();
+            },
+            onLoadError: (importError) => {
+                let message = 'Unknown error.';
+                if (importError.code === ImportErrorCode.NoImportableFile) {
+                    message = 'No importable file found.';
+                } else if (importError.code === ImportErrorCode.FailedToLoadFile) {
+                    message = 'Failed to load file for import.';
+                } else if (importError.code === ImportErrorCode.ImportFailed) {
+                    message = 'Failed to import model.';
+                }
+                if (importError.message !== null) {
+                    message += ' (' + importError.message + ')';
+                }
+                progressDiv.innerHTML = message;
+            },
+        });
     }
 
     LoadModelFromInputFiles(files, settings) {

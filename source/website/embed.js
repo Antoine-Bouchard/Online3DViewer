@@ -8,32 +8,29 @@ import { ThreeModelLoaderUI } from './threemodelloaderui.js';
 import { Direction } from '../engine/geometry/geometry.js';
 import { InputFilesFromUrls } from '../engine/import/importerfiles.js';
 
-export class Embed
-{
-    constructor (parameters)
-    {
+export class Embed {
+    constructor(parameters) {
         this.parameters = parameters;
-        this.viewer = new Viewer ();
-        this.hashHandler = new HashHandler ();
-        this.modelLoaderUI = new ThreeModelLoaderUI ();
+        this.viewer = new Viewer();
+        this.hashHandler = new HashHandler();
+        this.modelLoaderUI = new ThreeModelLoaderUI();
     }
 
-    Load ()
-    {
-        let canvas = AddDomElement (this.parameters.viewerDiv, 'canvas');
-        this.viewer.Init (canvas);
-        this.Resize ();
+    Load() {
+        let canvas = AddDomElement(this.parameters.viewerDiv, 'canvas');
+        this.viewer.Init(canvas);
+        this.Resize();
 
-        if (this.hashHandler.HasHash ()) {
-            let urls = this.hashHandler.GetModelFilesFromHash ();
+        if (this.hashHandler.HasHash()) {
+            let urls = this.hashHandler.GetModelFilesFromHash();
             if (urls === null) {
                 return;
             }
-            TransformFileHostUrls (urls);
+            TransformFileHostUrls(urls);
 
             let envMapName = 'fishermans_bastion';
             let bgIsEnvMap = false;
-            let environmentSettings = this.hashHandler.GetEnvironmentSettingsFromHash ();
+            let environmentSettings = this.hashHandler.GetEnvironmentSettingsFromHash();
             if (environmentSettings !== null) {
                 envMapName = environmentSettings.environmentMapName;
                 bgIsEnvMap = environmentSettings.backgroundIsEnvMap;
@@ -47,78 +44,96 @@ export class Embed
                 envMapPath + 'posz.jpg',
                 envMapPath + 'negz.jpg'
             ];
-            this.viewer.SetEnvironmentMapSettings (envMapTextures, bgIsEnvMap);
+            this.viewer.SetEnvironmentMapSettings(envMapTextures, bgIsEnvMap);
 
-            let cameraMode = this.hashHandler.GetCameraModeFromHash ();
+            let cameraMode = this.hashHandler.GetCameraModeFromHash();
             if (cameraMode !== null) {
-                this.viewer.SetCameraMode (cameraMode);
+                this.viewer.SetCameraMode(cameraMode);
             }
-            let background = this.hashHandler.GetBackgroundFromHash ();
+            let background = this.hashHandler.GetBackgroundFromHash();
             if (background !== null) {
-                this.viewer.SetBackgroundColor (background);
+                this.viewer.SetBackgroundColor(background);
             }
-            let edgeSettings = this.hashHandler.GetEdgeSettingsFromHash ();
+            let edgeSettings = this.hashHandler.GetEdgeSettingsFromHash();
             if (edgeSettings !== null) {
-                this.viewer.SetEdgeSettings (
+                this.viewer.SetEdgeSettings(
                     edgeSettings.showEdges,
                     edgeSettings.edgeColor,
                     edgeSettings.edgeThreshold
                 );
             }
-            let settings = new ImportSettings ();
-            let defaultColor = this.hashHandler.GetDefaultColorFromHash ();
+            let settings = new ImportSettings();
+            let defaultColor = this.hashHandler.GetDefaultColorFromHash();
             if (defaultColor !== null) {
                 settings.defaultColor = defaultColor;
             }
-            let inputFiles = InputFilesFromUrls (urls);
-            this.modelLoaderUI.LoadModel (inputFiles, settings, {
-                onStart : () =>
-                {
+            let inputFiles = InputFilesFromUrls(urls);
+            this.modelLoaderUI.LoadModel(inputFiles, settings, {
+                onStart: () => {
 
                 },
-                onFinish : (importResult, threeObject) =>
-                {
-                    this.OnModelFinished (threeObject);
+                onFinish: (importResult, threeObject) => {
+                    this.OnModelFinished(threeObject);
                 },
-                onRender : () =>
-                {
-                    this.viewer.Render ();
+                onRender: () => {
+                    this.viewer.Render();
                 },
-                onError : (importError) =>
-                {
+                onError: (importError) => {
 
                 }
             });
-            let hashParameters = CreateModelUrlParameters (urls);
-            let websiteUrl = this.parameters.websiteLinkDiv.getAttribute ('href') + '#' + hashParameters;
-            this.parameters.websiteLinkDiv.setAttribute ('href', websiteUrl);
+            let hashParameters = CreateModelUrlParameters(urls);
+            let websiteUrl = this.parameters.websiteLinkDiv.getAttribute('href') + '#' + hashParameters;
+            this.parameters.websiteLinkDiv.setAttribute('href', websiteUrl);
         }
 
-		window.addEventListener ('resize', () => {
-			this.Resize ();
-		});
+        window.addEventListener('resize', () => {
+            this.Resize();
+        });
+
+        window.addEventListener('message', (event) => {
+            const inputFiles = event.data.value.map(file =>
+            ({
+                name: file.name,
+                source: 3,
+                data: file.arrayBuffer
+            }));
+            let settings = new ImportSettings();
+            this.modelLoaderUI.LoadModel(inputFiles, settings, {
+                onStart: () => {
+
+                },
+                onFinish: (importResult, threeObject) => {
+                    this.OnModelFinished(threeObject);
+                },
+                onRender: () => {
+                    this.viewer.Render();
+                },
+                onError: (importError) => {
+
+                }
+            });
+        });
     }
 
-    Resize ()
-    {
+    Resize() {
         let windowWidth = window.innerWidth;
         let windowHeight = window.innerHeight;
-        this.viewer.Resize (windowWidth, windowHeight);
+        this.viewer.Resize(windowWidth, windowHeight);
     }
 
-    OnModelFinished (threeObject)
-    {
-        this.viewer.SetMainObject (threeObject);
-        let boundingSphere = this.viewer.GetBoundingSphere ((meshUserData) => {
+    OnModelFinished(threeObject) {
+        this.viewer.SetMainObject(threeObject);
+        let boundingSphere = this.viewer.GetBoundingSphere((meshUserData) => {
             return true;
         });
-        this.viewer.AdjustClippingPlanesToSphere (boundingSphere);
-        let camera = this.hashHandler.GetCameraFromHash ();
+        this.viewer.AdjustClippingPlanesToSphere(boundingSphere);
+        let camera = this.hashHandler.GetCameraFromHash();
         if (camera !== null) {
-            this.viewer.SetCamera (camera);
+            this.viewer.SetCamera(camera);
         } else {
-            this.viewer.SetUpVector (Direction.Y, false);
-            this.viewer.FitSphereToWindow (boundingSphere, false);
+            this.viewer.SetUpVector(Direction.Y, false);
+            this.viewer.FitSphereToWindow(boundingSphere, false);
         }
     }
 }

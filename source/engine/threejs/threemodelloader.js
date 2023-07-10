@@ -6,105 +6,98 @@ import { ConvertColorToThreeColor, HasHighpDriverIssue } from './threeutils.js';
 
 import * as THREE from 'three';
 
-export class ThreeModelLoader
-{
-    constructor ()
-    {
-        this.importer = new Importer ();
+export class ThreeModelLoader {
+    constructor() {
+        this.importer = new Importer();
         this.inProgress = false;
         this.defaultMaterial = null;
         this.objectUrls = null;
-        this.hasHighpDriverIssue = HasHighpDriverIssue ();
+        this.hasHighpDriverIssue = HasHighpDriverIssue();
     }
 
-    InProgress ()
-    {
+    InProgress() {
         return this.inProgress;
     }
 
-    LoadModel (inputFiles, settings, callbacks)
-    {
+    LoadModel(inputFiles, settings, callbacks) {
         if (this.inProgress) {
             return;
         }
 
         this.inProgress = true;
-        this.RevokeObjectUrls ();
-        this.importer.ImportFiles (inputFiles, settings, {
-            onLoadStart : () => {
-                callbacks.onLoadStart ();
+        this.RevokeObjectUrls();
+        this.importer.ImportFiles(inputFiles, settings, {
+            onLoadStart: () => {
+                callbacks.onLoadStart();
             },
-            onFileListProgress : (current, total) => {
-                callbacks.onFileListProgress (current, total);
+            onFileListProgress: (current, total) => {
+                callbacks.onFileListProgress(current, total);
             },
-            onFileLoadProgress : (current, total) => {
-                callbacks.onFileLoadProgress (current, total);
+            onFileLoadProgress: (current, total) => {
+                callbacks.onFileLoadProgress(current, total);
             },
-            onImportStart : () => {
-                callbacks.onImportStart ();
+            onImportStart: () => {
+                callbacks.onImportStart();
             },
-            onSelectMainFile : (fileNames, selectFile) => {
+            onSelectMainFile: (fileNames, selectFile) => {
                 if (!callbacks.onSelectMainFile) {
-                    selectFile (0);
+                    selectFile(0);
                 } else {
-                    callbacks.onSelectMainFile (fileNames, selectFile);
+                    callbacks.onSelectMainFile(fileNames, selectFile);
                 }
             },
-            onImportSuccess : (importResult) => {
-                callbacks.onVisualizationStart ();
-                let params = new ModelToThreeConversionParams ();
+            onImportSuccess: (importResult) => {
+                callbacks.onVisualizationStart();
+                let params = new ModelToThreeConversionParams();
                 params.forceMediumpForMaterials = this.hasHighpDriverIssue;
-                let output = new ModelToThreeConversionOutput ();
-                ConvertModelToThreeObject (importResult.model, params, output, {
-                    onTextureLoaded : () => {
-                        callbacks.onTextureLoaded ();
+                let output = new ModelToThreeConversionOutput();
+                ConvertModelToThreeObject(importResult.model, params, output, {
+                    onTextureLoaded: () => {
+                        callbacks.onTextureLoaded();
                     },
-                    onModelLoaded : (threeObject) => {
+                    onModelLoaded: (threeObject) => {
                         this.defaultMaterial = output.defaultMaterial;
                         this.objectUrls = output.objectUrls;
                         if (importResult.upVector === Direction.X) {
-                            let rotation = new THREE.Quaternion ().setFromAxisAngle (new THREE.Vector3 (0.0, 0.0, 1.0), Math.PI / 2.0);
-                            threeObject.quaternion.multiply (rotation);
+                            let rotation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0.0, 0.0, 1.0), Math.PI / 2.0);
+                            threeObject.quaternion.multiply(rotation);
                         } else if (importResult.upVector === Direction.Z) {
-                            let rotation = new THREE.Quaternion ().setFromAxisAngle (new THREE.Vector3 (1.0, 0.0, 0.0), -Math.PI / 2.0);
-                            threeObject.quaternion.multiply (rotation);
+                            let rotation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1.0, 0.0, 0.0), -Math.PI / 2.0);
+                            threeObject.quaternion.multiply(rotation);
                         }
-                        callbacks.onModelFinished (importResult, threeObject);
+                        console.log(importResult, threeObject);
+                        callbacks.onModelFinished(importResult, threeObject);
                         this.inProgress = false;
                     }
                 });
             },
-            onImportError : (importError) => {
-                callbacks.onLoadError (importError);
+            onImportError: (importError) => {
+                callbacks.onLoadError(importError);
                 this.inProgress = false;
             }
         });
     }
 
-    GetImporter ()
-    {
+    GetImporter() {
         return this.importer;
     }
 
-    GetDefaultMaterial ()
-    {
+    GetDefaultMaterial() {
         return this.defaultMaterial;
     }
 
-    ReplaceDefaultMaterialColor (defaultColor)
-    {
+    ReplaceDefaultMaterialColor(defaultColor) {
         if (this.defaultMaterial !== null && !this.defaultMaterial.vertexColors) {
-            this.defaultMaterial.color = ConvertColorToThreeColor (defaultColor);
+            this.defaultMaterial.color = ConvertColorToThreeColor(defaultColor);
         }
     }
 
-    RevokeObjectUrls ()
-    {
+    RevokeObjectUrls() {
         if (this.objectUrls === null) {
             return;
         }
         for (let objectUrl of this.objectUrls) {
-            RevokeObjectUrl (objectUrl);
+            RevokeObjectUrl(objectUrl);
         }
         this.objectUrls = null;
     }

@@ -98,8 +98,8 @@ export class EmbeddedViewer {
         progressDiv.innerHTML = "Loading model...";
         this.parentElement.appendChild(progressDiv);
       },
-      onFileListProgress: (current, total) => {},
-      onFileLoadProgress: (current, total) => {},
+      onFileListProgress: (current, total) => { },
+      onFileLoadProgress: (current, total) => { },
       onImportStart: () => {
         progressDiv.innerHTML = "Importing model...";
       },
@@ -146,6 +146,72 @@ export class EmbeddedViewer {
     });
   }
 
+  AddMeshFromInputFiles(files, navigator) {
+    if (files === null || files.length === 0) {
+      return null;
+    }
+
+    this.viewer.Clear();
+    let settings = new ImportSettings();
+    if (this.parameters.defaultColor) {
+      settings.defaultColor = this.parameters.defaultColor;
+    }
+
+    let progressDiv = null;
+    let loader = new ThreeModelLoader();
+    loader.LoadModel(files, settings, {
+      onLoadStart: () => {
+        // this.canvas.style.display = 'none';
+        // progressDiv = document.createElement('div');
+        // progressDiv.innerHTML = 'Loading model...';
+        // this.parentElement.appendChild(progressDiv);
+      },
+      onFileListProgress: (current, total) => { },
+      onFileLoadProgress: (current, total) => { },
+      onImportStart: () => {
+        // progressDiv.innerHTML = 'Importing model...';
+      },
+      onVisualizationStart: () => {
+        // progressDiv.innerHTML = 'Visualizing model...';
+      },
+      onModelFinished: (importResult, threeObject) => {
+        this.model = importResult.model;
+
+        this.viewer.SetMainObject(threeObject);
+        this.viewer.SetUpVector(Direction.Y, false);
+        navigator.FillTree(importResult);
+        // UpdateSidebar();
+        let boundingSphere = this.viewer.GetBoundingSphere((meshUserData) => {
+          return true;
+        });
+        this.viewer.AdjustClippingPlanesToSphere(boundingSphere);
+        if (this.parameters.camera) {
+          this.viewer.SetCamera(this.parameters.camera);
+        } else {
+          this.viewer.SetUpVector(Direction.Y, false);
+          this.viewer.FitSphereToWindow(boundingSphere, false);
+        }
+      },
+      onTextureLoaded: () => {
+        this.viewer.Render();
+      },
+      onLoadError: (importError) => {
+        let message = 'Unknown error.';
+        if (importError.code === ImportErrorCode.NoImportableFile) {
+          message = 'No importable file found.';
+        } else if (importError.code === ImportErrorCode.FailedToLoadFile) {
+          message = 'Failed to load file for import.';
+        } else if (importError.code === ImportErrorCode.ImportFailed) {
+          message = 'Failed to import model.';
+        }
+        if (importError.message !== null) {
+          message += ' (' + importError.message + ')';
+        }
+        progressDiv.innerHTML = message;
+      },
+    });
+  }
+
   LoadModelFromInputFiles(inputFiles) {
     if (inputFiles === null || inputFiles.length === 0) {
       return null;
@@ -167,8 +233,81 @@ export class EmbeddedViewer {
         progressDiv.innerHTML = "Loading model...";
         this.parentElement.appendChild(progressDiv);
       },
-      onFileListProgress: (current, total) => {},
-      onFileLoadProgress: (current, total) => {},
+      onFileListProgress: (current, total) => { },
+      onFileLoadProgress: (current, total) => { },
+      onImportStart: () => {
+        progressDiv.innerHTML = "Importing model...";
+      },
+      onVisualizationStart: () => {
+        progressDiv.innerHTML = "Visualizing model...";
+      },
+      onModelFinished: (importResult, threeObject) => {
+        this.parentElement.removeChild(progressDiv);
+        this.canvas.style.display = "inherit";
+        this.viewer.SetMainObject(threeObject);
+        let boundingSphere = this.viewer.GetBoundingSphere((meshUserData) => {
+          return true;
+        });
+        this.viewer.AdjustClippingPlanesToSphere(boundingSphere);
+        if (this.parameters.camera) {
+          this.viewer.SetCamera(this.parameters.camera);
+        } else {
+          this.viewer.SetUpVector(Direction.Y, false);
+          this.viewer.FitSphereToWindow(boundingSphere, false);
+        }
+
+        this.model = importResult.model;
+        if (this.parameters.onModelLoaded) {
+          this.parameters.onModelLoaded();
+        }
+      },
+      onTextureLoaded: () => {
+        this.viewer.Render();
+      },
+      onLoadError: (importError) => {
+        let message = "Unknown error.";
+        if (importError.code === ImportErrorCode.NoImportableFile) {
+          message = "No importable file found.";
+        } else if (importError.code === ImportErrorCode.FailedToLoadFile) {
+          message = "Failed to load file for import.";
+        } else if (importError.code === ImportErrorCode.ImportFailed) {
+          message = "Failed to import model.";
+        }
+        if (importError.message !== null) {
+          message += " (" + importError.message + ")";
+        }
+        progressDiv.innerHTML = message;
+      },
+    });
+  }
+
+  AddMeshToModelFromDataArrays(inputFiles) {
+    if (inputFiles === null || inputFiles.length === 0) {
+      return null;
+    }
+
+    this.viewer.Clear();
+    let settings = new ImportSettings();
+    if (this.parameters.defaultColor) {
+      settings.defaultColor = this.parameters.defaultColor;
+    }
+
+    this.model = null;
+    let progressDiv = null;
+    let loader = new ThreeModelLoader();
+    loader.LoadModel(inputFiles, settings, {
+      onLoadStart: () => {
+        this.canvas.style.display = "none";
+        progressDiv = document.createElement("div");
+        progressDiv.innerHTML = "Loading model...";
+        this.parentElement.appendChild(progressDiv);
+      },
+      onFileListProgress: (current, total) => {
+        // console.log(current, total)
+      },
+      onFileLoadProgress: (current, total) => {
+        // console.log(current, total)
+      },
       onImportStart: () => {
         progressDiv.innerHTML = "Importing model...";
       },

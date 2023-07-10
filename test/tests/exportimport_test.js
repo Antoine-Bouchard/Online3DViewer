@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import * as assert from 'assert';
 import * as OV from '../../source/engine/main.js';
 
@@ -129,7 +130,7 @@ function ExportImport (model, format, extension, onReady)
 
                 },
                 onImportSuccess : function (importResult) {
-                    onReady (importResult.model)
+                    onReady (importResult.model);
                 },
                 onImportError : function (importError) {
                     console.log (importError);
@@ -163,8 +164,8 @@ function CheckModel (model, model2)
     CheckModelBounds (model, model2);
 }
 
-describe ('Export-Import Test', function () {
-    it ('Export-Import Obj', function (done) {
+describe ('Export-Import Test', () => {
+    it ('Export-Import Obj', (done) => {
         let model = CreateTestModel ();
         ExportImport (model, OV.FileFormat.Text, 'obj', (model2) => {
             CheckModel (model, model2);
@@ -172,7 +173,7 @@ describe ('Export-Import Test', function () {
         });
     });
 
-    it ('Export-Import Stl Ascii', function (done) {
+    it ('Export-Import Stl Ascii', (done) => {
         let model = CreateTestModel ();
         ExportImport (model, OV.FileFormat.Text, 'stl', (model2) => {
             CheckSingleMeshModel (model, model2);
@@ -180,7 +181,7 @@ describe ('Export-Import Test', function () {
         });
     });
 
-    it ('Export-Import Stl Binary', function (done) {
+    it ('Export-Import Stl Binary', (done) => {
         let model = CreateTestModel ();
         ExportImport (model, OV.FileFormat.Binary, 'stl', (model2) => {
             CheckSingleMeshModel (model, model2);
@@ -188,7 +189,7 @@ describe ('Export-Import Test', function () {
         });
     });
 
-    it ('Export-Import Ply Ascii', function (done) {
+    it ('Export-Import Ply Ascii', (done) => {
         let model = CreateTestModel ();
         ExportImport (model, OV.FileFormat.Text, 'ply', (model2) => {
             CheckSingleMeshModel (model, model2);
@@ -196,7 +197,7 @@ describe ('Export-Import Test', function () {
         });
     });
 
-    it ('Export-Import Ply Binary', function (done) {
+    it ('Export-Import Ply Binary', (done) => {
         let model = CreateTestModel ();
         ExportImport (model, OV.FileFormat.Binary, 'ply', (model2) => {
             CheckSingleMeshModel (model, model2);
@@ -204,7 +205,7 @@ describe ('Export-Import Test', function () {
         });
     });
 
-    it ('Export-Import glTF Ascii', function (done) {
+    it ('Export-Import glTF Ascii', (done) => {
         let model = CreateTestModel ();
         ExportImport (model, OV.FileFormat.Text, 'gltf', (model2) => {
             CheckModel (model, model2);
@@ -212,7 +213,7 @@ describe ('Export-Import Test', function () {
         });
     });
 
-    it ('Export-Import glTF Binary', function (done) {
+    it ('Export-Import glTF Binary', (done) => {
         let model = CreateTestModel ();
         ExportImport (model, OV.FileFormat.Binary, 'glb', (model2) => {
             CheckModel (model, model2);
@@ -220,7 +221,7 @@ describe ('Export-Import Test', function () {
         });
     });
 
-    it ('Export-Import Off', function (done) {
+    it ('Export-Import Off', (done) => {
         let model = CreateTestModel ();
         ExportImport (model, OV.FileFormat.Text, 'off', (model2) => {
             CheckSingleMeshModel (model, model2);
@@ -228,7 +229,7 @@ describe ('Export-Import Test', function () {
         });
     });
 
-    it ('Export-Import Bim', function (done) {
+    it ('Export-Import Bim', (done) => {
         let model = CreateTestModel ();
         ExportImport (model, OV.FileFormat.Text, 'bim', (model2) => {
             assert.strictEqual (model2.MaterialCount (), 2);
@@ -240,8 +241,8 @@ describe ('Export-Import Test', function () {
     });
 });
 
-describe ('Export-Import Vertex Colors Test', function () {
-    it ('Export-Import Vertex Colors glTF', function (done) {
+describe ('Export-Import Vertex Colors Test', () => {
+    it ('Export-Import Vertex Colors glTF', (done) => {
         let model = new OV.Model ();
         let mesh = new OV.Mesh ();
         mesh.AddVertex (new OV.Coord3D (0.0, 0.0, 0.0));

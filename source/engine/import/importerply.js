@@ -156,13 +156,8 @@ export class ImporterPly extends ImporterBase {
 
   ImportContent(fileContent, onFinish) {
     let headerString = this.GetHeaderContent(fileContent);
-    console.log(
-      "headerString: " + headerString + "with fileContent of :" + fileContent
-    );
     let header = this.ReadHeader(headerString);
-    console.log("header: " + header);
     let checkResult = header.Check();
-    console.log("checkResult: " + checkResult);
     if (checkResult === PlyHeaderCheckResult.Ok) {
       if (header.format === "ascii") {
         let contentString = ArrayBufferToUtf8String(fileContent);

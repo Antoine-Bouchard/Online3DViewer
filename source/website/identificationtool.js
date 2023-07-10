@@ -183,9 +183,6 @@ export class IdentificationTool {
             this.panel.innerHTML = 'Select 5th';
         } else if (this.markers.length === 2) {
             this.panel.innerHTML = 'Select heel';
-        } else {
-            this.panel.innerHTML = 'Check logs';
-            console.log(this.markers);
         }
         this.Resize();
     }

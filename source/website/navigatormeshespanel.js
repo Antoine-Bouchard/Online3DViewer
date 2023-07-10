@@ -8,21 +8,18 @@ import { AddSvgIconElement, GetMaterialName, GetMeshName, GetNodeName, SetSvgIco
 
 const MeshesPanelMode =
 {
-    Simple : 0,
-    FlatList : 1,
-    TreeView : 2
+    Simple: 0,
+    FlatList: 1,
+    TreeView: 2
 };
 
-class NavigatorMaterialsPopupButton extends NavigatorPopupButton
-{
-    constructor (parentDiv)
-    {
-        super (parentDiv);
+class NavigatorMaterialsPopupButton extends NavigatorPopupButton {
+    constructor(parentDiv) {
+        super(parentDiv);
         this.materialInfoArray = null;
     }
 
-    Update (materialInfoArray)
-    {
+    Update(materialInfoArray) {
         this.materialInfoArray = materialInfoArray;
         if (this.materialInfoArray === null) {
             return;
@@ -32,8 +29,7 @@ class NavigatorMaterialsPopupButton extends NavigatorPopupButton
         this.buttonText.innerHTML = materialsText;
     }
 
-    OnButtonClick ()
-    {
+    OnButtonClick() {
         if (this.materialInfoArray === null) {
             return;
         }
@@ -41,9 +37,9 @@ class NavigatorMaterialsPopupButton extends NavigatorPopupButton
         let materialItems = [];
         for (let i = 0; i < this.materialInfoArray.length; i++) {
             let usedMaterial = this.materialInfoArray[i];
-            materialItems.push ({
-                name : GetMaterialName (usedMaterial.name),
-                color : usedMaterial.color
+            materialItems.push({
+                name: GetMaterialName(usedMaterial.name),
+                color: usedMaterial.color
             });
         }
 
@@ -51,103 +47,94 @@ class NavigatorMaterialsPopupButton extends NavigatorPopupButton
             return;
         }
 
-        this.popup = ShowListPopup (materialItems, {
-            calculatePosition : (contentDiv) => {
-                return CalculatePopupPositionToElementBottomRight (this.button, contentDiv);
+        this.popup = ShowListPopup(materialItems, {
+            calculatePosition: (contentDiv) => {
+                return CalculatePopupPositionToElementBottomRight(this.button, contentDiv);
             },
-            onClick : (index) => {
+            onClick: (index) => {
                 let usedMaterial = this.materialInfoArray[index];
-                this.callbacks.onMaterialSelected (usedMaterial.index);
+                this.callbacks.onMaterialSelected(usedMaterial.index);
             }
         });
     }
 }
 
-export class NavigatorMeshesPanel extends NavigatorPanel
-{
-    constructor (parentDiv)
-    {
-        super (parentDiv);
+export class NavigatorMeshesPanel extends NavigatorPanel {
+    constructor(parentDiv) {
+        super(parentDiv);
 
         this.callbacks = null;
-        this.nodeIdToItem = new Map ();
-        this.meshInstanceIdToItem = new Map ();
+        this.nodeIdToItem = new Map();
+        this.meshInstanceIdToItem = new Map();
         this.rootItem = null;
         this.mode = MeshesPanelMode.Simple;
         this.buttons = null;
 
-        this.treeView.AddClass ('tight');
-        this.titleButtonsDiv = AddDiv (this.titleDiv, 'ov_navigator_tree_title_buttons');
-        this.buttonsDiv = CreateDiv ('ov_navigator_buttons');
-        InsertDomElementBefore (this.buttonsDiv, this.treeDiv);
+        this.treeView.AddClass('tight');
+        this.titleButtonsDiv = AddDiv(this.titleDiv, 'ov_navigator_tree_title_buttons');
+        this.buttonsDiv = CreateDiv('ov_navigator_buttons');
+        InsertDomElementBefore(this.buttonsDiv, this.treeDiv);
 
-        this.popupDiv = AddDiv (this.panelDiv, 'ov_navigator_info_panel');
-        this.materialsButton = new NavigatorMaterialsPopupButton (this.popupDiv);
+        this.popupDiv = AddDiv(this.panelDiv, 'ov_navigator_info_panel');
+        this.materialsButton = new NavigatorMaterialsPopupButton(this.popupDiv);
     }
 
-    GetName ()
-    {
+    GetName() {
         return 'Meshes';
     }
 
-    GetIcon ()
-    {
+    GetIcon() {
         return 'meshes';
     }
 
-    Resize ()
-    {
-        let titleHeight = GetDomElementOuterHeight (this.titleDiv);
+    Resize() {
+        let titleHeight = GetDomElementOuterHeight(this.titleDiv);
         let buttonsHeight = 0;
-        if (IsDomElementVisible (this.buttonsDiv)) {
-            buttonsHeight = GetDomElementOuterHeight (this.buttonsDiv);
+        if (IsDomElementVisible(this.buttonsDiv)) {
+            buttonsHeight = GetDomElementOuterHeight(this.buttonsDiv);
         }
-        let popupHeight = GetDomElementOuterHeight (this.popupDiv);
+        let popupHeight = GetDomElementOuterHeight(this.popupDiv);
         let height = this.parentDiv.offsetHeight;
-        SetDomElementHeight (this.treeDiv, height - titleHeight - buttonsHeight - popupHeight);
+        SetDomElementHeight(this.treeDiv, height - titleHeight - buttonsHeight - popupHeight);
     }
 
-    Clear ()
-    {
-        this.ClearMeshTree ();
-        ClearDomElement (this.titleButtonsDiv);
-        ClearDomElement (this.buttonsDiv);
+    Clear() {
+        this.ClearMeshTree();
+        ClearDomElement(this.titleButtonsDiv);
+        ClearDomElement(this.buttonsDiv);
         this.buttons = null;
     }
 
-    ClearMeshTree ()
-    {
-        super.Clear ();
-        this.materialsButton.Clear ();
-        this.nodeIdToItem = new Map ();
-        this.meshInstanceIdToItem = new Map ();
+    ClearMeshTree() {
+        super.Clear();
+        this.materialsButton.Clear();
+        this.nodeIdToItem = new Map();
+        this.meshInstanceIdToItem = new Map();
         this.rootItem = null;
     }
 
-    Init (callbacks)
-    {
-        super.Init (callbacks);
-        this.materialsButton.Init ({
-            onMeshHover : (meshInstanceId) => {
-                this.callbacks.onMeshTemporarySelected (meshInstanceId);
+    Init(callbacks) {
+        super.Init(callbacks);
+        this.materialsButton.Init({
+            onMeshHover: (meshInstanceId) => {
+                this.callbacks.onMeshTemporarySelected(meshInstanceId);
             },
-            onMeshSelected : (meshInstanceId) => {
-                this.callbacks.onMeshSelected (meshInstanceId);
+            onMeshSelected: (meshInstanceId) => {
+                this.callbacks.onMeshSelected(meshInstanceId);
             },
-            onMaterialSelected : (materialIndex) => {
-                this.callbacks.onMaterialSelected (materialIndex);
+            onMaterialSelected: (materialIndex) => {
+                this.callbacks.onMaterialSelected(materialIndex);
             }
         });
     }
 
-    Fill (importResult)
-    {
-        super.Fill (importResult);
+    Fill(importResult) {
+        super.Fill(importResult);
 
-        const rootNode = importResult.model.GetRootNode ();
+        const rootNode = importResult.model.GetRootNode();
         let isHierarchical = false;
-        for (let childNode of rootNode.GetChildNodes ()) {
-            if (childNode.GetType () === NodeType.GroupNode) {
+        for (let childNode of rootNode.GetChildNodes()) {
+            if (childNode.GetType() === NodeType.GroupNode) {
                 isHierarchical = true;
                 break;
             }
@@ -162,301 +149,285 @@ export class NavigatorMeshesPanel extends NavigatorPanel
             }
         }
 
-        this.FillButtons (importResult);
+        this.FillButtons(importResult);
         if (this.mode === MeshesPanelMode.Simple) {
-            ShowDomElement (this.buttonsDiv, false);
-            this.titleDiv.classList.add ('withbuttons');
-            this.titleDiv.classList.remove ('nomargin');
+            ShowDomElement(this.buttonsDiv, false);
+            this.titleDiv.classList.add('withbuttons');
+            this.titleDiv.classList.remove('nomargin');
         } else {
-            ShowDomElement (this.buttonsDiv, true);
-            this.titleDiv.classList.remove ('withbuttons');
-            this.titleDiv.classList.add ('nomargin');
+            ShowDomElement(this.buttonsDiv, true);
+            this.titleDiv.classList.remove('withbuttons');
+            this.titleDiv.classList.add('nomargin');
         }
 
-        this.FillMeshTree (importResult.model);
-        this.Resize ();
+        this.FillMeshTree(importResult.model);
+        this.Resize();
     }
 
-    FillButtons (importResult)
-    {
-        function CreateButton (parentDiv, button, className, onClick)
-        {
-            button.div = AddDiv (parentDiv, 'ov_navigator_button');
-            button.div.setAttribute ('alt', button.name);
-            button.div.setAttribute ('title', button.name);
+    FillButtons(importResult) {
+        function CreateButton(parentDiv, button, className, onClick) {
+            button.div = AddDiv(parentDiv, 'ov_navigator_button');
+            button.div.setAttribute('alt', button.name);
+            button.div.setAttribute('title', button.name);
             if (className) {
-                button.div.classList.add (className);
+                button.div.classList.add(className);
             }
-            button.iconDiv = AddSvgIconElement (button.div, button.icon);
-            button.div.addEventListener ('click', () => {
-                onClick ();
+            button.iconDiv = AddSvgIconElement(button.div, button.icon);
+            button.div.addEventListener('click', () => {
+                onClick();
             });
         }
 
-        function UpdateButtonsStatus (buttons, mode)
-        {
+        function UpdateButtonsStatus(buttons, mode) {
             let showTree = (mode === MeshesPanelMode.TreeView);
             if (showTree) {
-                buttons.flatList.iconDiv.classList.remove ('selected');
-                buttons.treeView.iconDiv.classList.add ('selected');
+                buttons.flatList.iconDiv.classList.remove('selected');
+                buttons.treeView.iconDiv.classList.add('selected');
             } else {
-                buttons.flatList.iconDiv.classList.add ('selected');
-                buttons.treeView.iconDiv.classList.remove ('selected');
+                buttons.flatList.iconDiv.classList.add('selected');
+                buttons.treeView.iconDiv.classList.remove('selected');
             }
-            ShowDomElement (buttons.separator, showTree);
-            ShowDomElement (buttons.expandAll.div, showTree);
-            ShowDomElement (buttons.collapseAll.div, showTree);
+            ShowDomElement(buttons.separator, showTree);
+            ShowDomElement(buttons.expandAll.div, showTree);
+            ShowDomElement(buttons.collapseAll.div, showTree);
         }
 
-        function UpdateView (panel, importResult)
-        {
+        function UpdateView(panel, importResult) {
             let hiddenMeshInstanceIds = [];
-            panel.EnumerateMeshItems ((meshItem) => {
-                if (!meshItem.IsVisible ()) {
-                    hiddenMeshInstanceIds.push (meshItem.GetMeshInstanceId ());
+            panel.EnumerateMeshItems((meshItem) => {
+                if (!meshItem.IsVisible()) {
+                    hiddenMeshInstanceIds.push(meshItem.GetMeshInstanceId());
                 }
                 return true;
             });
 
-            panel.ClearMeshTree ();
-            panel.FillMeshTree (importResult.model);
+            panel.ClearMeshTree();
+            panel.FillMeshTree(importResult.model);
 
             for (let meshInstanceId of hiddenMeshInstanceIds) {
-                let meshItem = panel.GetMeshItem (meshInstanceId);
-                meshItem.SetVisible (false, NavigatorItemRecurse.Parents);
+                let meshItem = panel.GetMeshItem(meshInstanceId);
+                meshItem.SetVisible(false, NavigatorItemRecurse.Parents);
             }
 
-            UpdateButtonsStatus (panel.buttons, panel.mode);
-            panel.callbacks.onViewTypeChanged ();
+            UpdateButtonsStatus(panel.buttons, panel.mode);
+            panel.callbacks.onViewTypeChanged();
         }
 
         this.buttons = {
-            flatList : {
-                name : 'Flat list',
-                icon : 'flat_list',
-                div : null,
-                iconDiv : null
+            flatList: {
+                name: 'Flat list',
+                icon: 'flat_list',
+                div: null,
+                iconDiv: null
             },
-            treeView : {
-                name : 'Tree view',
-                icon : 'tree_view',
-                div : null,
-                iconDiv : null
+            treeView: {
+                name: 'Tree view',
+                icon: 'tree_view',
+                div: null,
+                iconDiv: null
             },
-            separator : null,
-            expandAll : {
-                name : 'Expand all',
-                icon : 'expand',
-                div : null,
-                iconDiv : null
+            separator: null,
+            expandAll: {
+                name: 'Expand all',
+                icon: 'expand',
+                div: null,
+                iconDiv: null
             },
-            collapseAll : {
-                name : 'Collapse all',
-                icon : 'collapse',
-                div : null,
-                iconDiv : null
+            collapseAll: {
+                name: 'Collapse all',
+                icon: 'collapse',
+                div: null,
+                iconDiv: null
             },
-            showHideMeshes : {
-                name : 'Show/hide meshes',
-                icon : 'visible',
-                div : null,
-                iconDiv : null
+            showHideMeshes: {
+                name: 'Show/hide meshes',
+                icon: 'visible',
+                div: null,
+                iconDiv: null
             },
-            fitToWindow : {
-                name : 'Fit meshes to window',
-                icon : 'fit',
-                div : null,
-                iconDiv : null
+            fitToWindow: {
+                name: 'Fit meshes to window',
+                icon: 'fit',
+                div: null,
+                iconDiv: null
             }
         };
 
         if (this.mode === MeshesPanelMode.Simple) {
-            CreateButton (this.titleButtonsDiv, this.buttons.showHideMeshes, 'right', () => {
-                let nodeId = this.rootItem.GetNodeId ();
-                this.callbacks.onNodeShowHide (nodeId);
+            CreateButton(this.titleButtonsDiv, this.buttons.showHideMeshes, 'right', () => {
+                let nodeId = this.rootItem.GetNodeId();
+                this.callbacks.onNodeShowHide(nodeId);
             });
 
-            CreateButton (this.titleButtonsDiv, this.buttons.fitToWindow, 'right', () => {
-                let nodeId = this.rootItem.GetNodeId ();
-                this.callbacks.onNodeFitToWindow (nodeId);
+            CreateButton(this.titleButtonsDiv, this.buttons.fitToWindow, 'right', () => {
+                let nodeId = this.rootItem.GetNodeId();
+                this.callbacks.onNodeFitToWindow(nodeId);
             });
         } else {
-            CreateButton (this.buttonsDiv, this.buttons.flatList, null, () => {
+            CreateButton(this.buttonsDiv, this.buttons.flatList, null, () => {
                 if (this.mode === MeshesPanelMode.FlatList) {
                     return;
                 }
                 this.mode = MeshesPanelMode.FlatList;
-                UpdateView (this, importResult);
+                UpdateView(this, importResult);
             });
 
-            CreateButton (this.buttonsDiv, this.buttons.treeView, null, () => {
+            CreateButton(this.buttonsDiv, this.buttons.treeView, null, () => {
                 if (this.mode === MeshesPanelMode.TreeView) {
                     return;
                 }
                 this.mode = MeshesPanelMode.TreeView;
-                UpdateView (this, importResult);
+                UpdateView(this, importResult);
             });
 
-            this.buttons.separator = AddDiv (this.buttonsDiv, 'ov_navigator_buttons_separator');
+            this.buttons.separator = AddDiv(this.buttonsDiv, 'ov_navigator_buttons_separator');
 
-            CreateButton (this.buttonsDiv, this.buttons.expandAll, null, () => {
-                this.rootItem.ExpandAll (true);
+            CreateButton(this.buttonsDiv, this.buttons.expandAll, null, () => {
+                this.rootItem.ExpandAll(true);
             });
 
-            CreateButton (this.buttonsDiv, this.buttons.collapseAll, null, () => {
-                this.rootItem.ExpandAll (false);
+            CreateButton(this.buttonsDiv, this.buttons.collapseAll, null, () => {
+                this.rootItem.ExpandAll(false);
             });
 
-            CreateButton (this.buttonsDiv, this.buttons.showHideMeshes, 'right', () => {
-                let nodeId = this.rootItem.GetNodeId ();
-                this.callbacks.onNodeShowHide (nodeId);
+            CreateButton(this.buttonsDiv, this.buttons.showHideMeshes, 'right', () => {
+                let nodeId = this.rootItem.GetNodeId();
+                this.callbacks.onNodeShowHide(nodeId);
             });
 
-            CreateButton (this.buttonsDiv, this.buttons.fitToWindow, 'right', () => {
-                let nodeId = this.rootItem.GetNodeId ();
-                this.callbacks.onNodeFitToWindow (nodeId);
+            CreateButton(this.buttonsDiv, this.buttons.fitToWindow, 'right', () => {
+                let nodeId = this.rootItem.GetNodeId();
+                this.callbacks.onNodeFitToWindow(nodeId);
             });
 
-            UpdateButtonsStatus (this.buttons, this.mode);
+            UpdateButtonsStatus(this.buttons, this.mode);
         }
     }
 
-    FillMeshTree (model)
-    {
-        function AddMeshToNodeTree (panel, model, node, meshIndex, parentItem, mode)
-        {
-            let mesh = model.GetMesh (meshIndex);
-            let meshName = GetMeshName (mesh.GetName ());
-            let meshInstanceId = new MeshInstanceId (node.GetId (), meshIndex);
+    FillMeshTree(model) {
+        function AddMeshToNodeTree(panel, model, node, meshIndex, parentItem, mode) {
+            let mesh = model.GetMesh(meshIndex);
+            let meshName = GetMeshName(mesh.GetName());
+            let meshInstanceId = new MeshInstanceId(node.GetId(), meshIndex);
             let meshItemIcon = (mode === MeshesPanelMode.TreeView ? 'tree_mesh' : null);
-            let meshItem = new MeshItem (meshName, meshItemIcon, meshInstanceId, {
-                onShowHide : (selectedMeshId) => {
-                    panel.callbacks.onMeshShowHide (selectedMeshId);
+            let meshItem = new MeshItem(meshName, meshItemIcon, meshInstanceId, {
+                onShowHide: (selectedMeshId) => {
+                    panel.callbacks.onMeshShowHide(selectedMeshId);
                 },
-                onFitToWindow : (selectedMeshId) => {
-                    panel.callbacks.onMeshFitToWindow (selectedMeshId);
+                onFitToWindow: (selectedMeshId) => {
+                    panel.callbacks.onMeshFitToWindow(selectedMeshId);
                 },
-                onSelected : (selectedMeshId) => {
-                    panel.callbacks.onMeshSelected (selectedMeshId);
+                onSelected: (selectedMeshId) => {
+                    panel.callbacks.onMeshSelected(selectedMeshId);
                 }
             });
-            panel.meshInstanceIdToItem.set (meshInstanceId.GetKey (), meshItem);
-            parentItem.AddChild (meshItem);
+            panel.meshInstanceIdToItem.set(meshInstanceId.GetKey(), meshItem);
+            parentItem.AddChild(meshItem);
         }
 
-        function CreateNodeItem (panel, node)
-        {
-            const nodeName = GetNodeName (node.GetName ());
-            const nodeId = node.GetId ();
-            let nodeItem = new NodeItem (nodeName, nodeId, {
-                onShowHide : (selectedNodeId) => {
-                    panel.callbacks.onNodeShowHide (selectedNodeId);
+        function CreateNodeItem(panel, node) {
+            const nodeName = GetNodeName(node.GetName());
+            const nodeId = node.GetId();
+            let nodeItem = new NodeItem(nodeName, nodeId, {
+                onShowHide: (selectedNodeId) => {
+                    panel.callbacks.onNodeShowHide(selectedNodeId);
                 },
-                onFitToWindow : (selectedNodeId) => {
-                    panel.callbacks.onNodeFitToWindow (selectedNodeId);
+                onFitToWindow: (selectedNodeId) => {
+                    panel.callbacks.onNodeFitToWindow(selectedNodeId);
                 }
             });
-            panel.nodeIdToItem.set (nodeId, nodeItem);
+            panel.nodeIdToItem.set(nodeId, nodeItem);
             return nodeItem;
         }
 
-        function CreateDummyRootItem (panel, node)
-        {
-            const nodeId = node.GetId ();
-            let rootItem = new NodeItem (null, nodeId, {
-                onVisibilityChanged : (isVisible) => {
+        function CreateDummyRootItem(panel, node) {
+            const nodeId = node.GetId();
+            let rootItem = new NodeItem(null, nodeId, {
+                onVisibilityChanged: (isVisible) => {
                     if (isVisible) {
-                        SetSvgIconImageElement (panel.buttons.showHideMeshes.iconDiv, 'visible');
+                        SetSvgIconImageElement(panel.buttons.showHideMeshes.iconDiv, 'visible');
                     } else {
-                        SetSvgIconImageElement (panel.buttons.showHideMeshes.iconDiv, 'hidden');
+                        SetSvgIconImageElement(panel.buttons.showHideMeshes.iconDiv, 'hidden');
                     }
                 }
             });
-            rootItem.Show (false);
-            rootItem.ShowChildren (true);
-            panel.treeView.AddChild (rootItem);
-            panel.nodeIdToItem.set (nodeId, rootItem);
+            rootItem.Show(false);
+            rootItem.ShowChildren(true);
+            panel.treeView.AddChild(rootItem);
+            panel.nodeIdToItem.set(nodeId, rootItem);
             return rootItem;
         }
 
-        function AddModelNodeToTree (panel, model, node, parentItem, mode)
-        {
+        function AddModelNodeToTree(panel, model, node, parentItem, mode) {
             let meshNodes = [];
-            for (let childNode of node.GetChildNodes ()) {
+            console.log(node);
+            for (let childNode of node.GetChildNodes()) {
                 if (mode === MeshesPanelMode.TreeView) {
-                    if (childNode.GetType () === NodeType.GroupNode) {
-                        let nodeItem = CreateNodeItem (panel, childNode);
-                        parentItem.AddChild (nodeItem);
-                        AddModelNodeToTree (panel, model, childNode, nodeItem, mode);
-                    } else if (childNode.GetType () === NodeType.MeshNode) {
-                        meshNodes.push (childNode);
+                    if (childNode.GetType() === NodeType.GroupNode) {
+                        let nodeItem = CreateNodeItem(panel, childNode);
+                        parentItem.AddChild(nodeItem);
+                        AddModelNodeToTree(panel, model, childNode, nodeItem, mode);
+                    } else if (childNode.GetType() === NodeType.MeshNode) {
+                        meshNodes.push(childNode);
                     }
                 } else {
-                    AddModelNodeToTree (panel, model, childNode, parentItem, mode);
+                    AddModelNodeToTree(panel, model, childNode, parentItem, mode);
                 }
             }
             for (let meshNode of meshNodes) {
-                AddModelNodeToTree (panel, model, meshNode, parentItem, mode);
+                AddModelNodeToTree(panel, model, meshNode, parentItem, mode);
             }
-            for (let meshIndex of node.GetMeshIndices ()) {
-                AddMeshToNodeTree (panel, model, node, meshIndex, parentItem, mode);
+            for (let meshIndex of node.GetMeshIndices()) {
+                AddMeshToNodeTree(panel, model, node, meshIndex, parentItem, mode);
             }
         }
 
-        let rootNode = model.GetRootNode ();
-        this.rootItem = CreateDummyRootItem (this, rootNode);
-        AddModelNodeToTree (this, model, rootNode, this.rootItem, this.mode);
+        let rootNode = model.GetRootNode();
+        this.rootItem = CreateDummyRootItem(this, rootNode);
+        AddModelNodeToTree(this, model, rootNode, this.rootItem, this.mode);
     }
 
-    UpdateMaterialList (materialInfoArray)
-    {
-        this.materialsButton.Update (materialInfoArray);
+    UpdateMaterialList(materialInfoArray) {
+        this.materialsButton.Update(materialInfoArray);
     }
 
-    GetNodeItem (nodeId)
-    {
-        return this.nodeIdToItem.get (nodeId);
+    GetNodeItem(nodeId) {
+        return this.nodeIdToItem.get(nodeId);
     }
 
-    MeshItemCount ()
-    {
+    MeshItemCount() {
         return this.meshInstanceIdToItem.size;
     }
 
-    GetMeshItem (meshInstanceId)
-    {
-        return this.meshInstanceIdToItem.get (meshInstanceId.GetKey ());
+    GetMeshItem(meshInstanceId) {
+        return this.meshInstanceIdToItem.get(meshInstanceId.GetKey());
     }
 
-    EnumerateNodeItems (processor)
-    {
-        for (const nodeItem of this.nodeIdToItem.values ()) {
-            if (!processor (nodeItem)) {
+    EnumerateNodeItems(processor) {
+        for (const nodeItem of this.nodeIdToItem.values()) {
+            if (!processor(nodeItem)) {
                 break;
             }
         }
     }
 
-    EnumerateMeshItems (processor)
-    {
-        for (const meshItem of this.meshInstanceIdToItem.values ()) {
-            if (!processor (meshItem)) {
+    EnumerateMeshItems(processor) {
+        for (const meshItem of this.meshInstanceIdToItem.values()) {
+            if (!processor(meshItem)) {
                 break;
             }
         }
     }
 
-    IsMeshVisible (meshInstanceId)
-    {
-        let meshItem = this.GetMeshItem (meshInstanceId);
-        return meshItem.IsVisible ();
+    IsMeshVisible(meshInstanceId) {
+        let meshItem = this.GetMeshItem(meshInstanceId);
+        return meshItem.IsVisible();
     }
 
-    HasHiddenMesh ()
-    {
+    HasHiddenMesh() {
         let hasHiddenMesh = false;
-        this.EnumerateMeshItems ((meshItem) => {
-            if (!meshItem.IsVisible ()) {
+        this.EnumerateMeshItems((meshItem) => {
+            if (!meshItem.IsVisible()) {
                 hasHiddenMesh = true;
                 return false;
             }
@@ -465,35 +436,31 @@ export class NavigatorMeshesPanel extends NavigatorPanel
         return hasHiddenMesh;
     }
 
-    ShowAllMeshes (show)
-    {
-        this.EnumerateNodeItems ((nodeItem) => {
-            nodeItem.SetVisible (show, NavigatorItemRecurse.No);
+    ShowAllMeshes(show) {
+        this.EnumerateNodeItems((nodeItem) => {
+            nodeItem.SetVisible(show, NavigatorItemRecurse.No);
             return true;
         });
-        this.EnumerateMeshItems ((meshItem) => {
-            meshItem.SetVisible (show, NavigatorItemRecurse.No);
+        this.EnumerateMeshItems((meshItem) => {
+            meshItem.SetVisible(show, NavigatorItemRecurse.No);
             return true;
         });
     }
 
-    ToggleNodeVisibility (nodeId)
-    {
-        let nodeItem = this.GetNodeItem (nodeId);
-        nodeItem.SetVisible (!nodeItem.IsVisible (), NavigatorItemRecurse.All);
+    ToggleNodeVisibility(nodeId) {
+        let nodeItem = this.GetNodeItem(nodeId);
+        nodeItem.SetVisible(!nodeItem.IsVisible(), NavigatorItemRecurse.All);
     }
 
-    ToggleMeshVisibility (meshInstanceId)
-    {
-        let meshItem = this.GetMeshItem (meshInstanceId);
-        meshItem.SetVisible (!meshItem.IsVisible (), NavigatorItemRecurse.Parents);
+    ToggleMeshVisibility(meshInstanceId) {
+        let meshItem = this.GetMeshItem(meshInstanceId);
+        meshItem.SetVisible(!meshItem.IsVisible(), NavigatorItemRecurse.Parents);
     }
 
-    IsMeshIsolated (meshInstanceId)
-    {
+    IsMeshIsolated(meshInstanceId) {
         let isIsolated = true;
-        this.EnumerateMeshItems ((meshItem) => {
-            if (!meshItem.GetMeshInstanceId ().IsEqual (meshInstanceId) && meshItem.IsVisible ()) {
+        this.EnumerateMeshItems((meshItem) => {
+            if (!meshItem.GetMeshInstanceId().IsEqual(meshInstanceId) && meshItem.IsVisible()) {
                 isIsolated = false;
                 return false;
             }
@@ -502,9 +469,8 @@ export class NavigatorMeshesPanel extends NavigatorPanel
         return isIsolated;
     }
 
-    IsolateMesh (meshInstanceId)
-    {
-        this.ShowAllMeshes (false);
-        this.ToggleMeshVisibility (meshInstanceId);
+    IsolateMesh(meshInstanceId) {
+        this.ShowAllMeshes(false);
+        this.ToggleMeshVisibility(meshInstanceId);
     }
 }

@@ -32,13 +32,13 @@ export class ThreeModelLoaderUI
             },
             onFileLoadProgress : (current, total) => {
             },
-            onSelectMainFile : (fileNames, selectFile) => {
-                progressDialog.Close ();
-                this.modalDialog = this.ShowFileSelectorDialog (fileNames, (index) => {
-                    progressDialog.Open ();
-                    selectFile (index);
-                });
-            },
+            // onSelectMainFile : (fileNames, selectFile) => {
+            //     progressDialog.Close ();
+            //     this.modalDialog = this.ShowFileSelectorDialog (fileNames, (index) => {
+            //         progressDialog.Open ();
+            //         selectFile (index);
+            //     });
+            // },
             onImportStart : () => {
                 progressDialog.SetText ('Importing Model');
             },

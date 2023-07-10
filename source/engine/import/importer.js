@@ -1,26 +1,26 @@
-import { RunTaskAsync } from "../core/taskrunner.js";
-import { FileSource, GetFileName } from "../io/fileutils.js";
-import { RGBColor } from "../model/color.js";
-import { ImporterFile, ImporterFileList } from "./importerfiles.js";
-import { Importer3dm } from "./importer3dm.js";
-import { Importer3ds } from "./importer3ds.js";
-import { ImporterGltf } from "./importergltf.js";
-import { ImporterIfc } from "./importerifc.js";
-import { ImporterO3dv } from "./importero3dv.js";
-import { ImporterObj } from "./importerobj.js";
-import { ImporterOff } from "./importeroff.js";
-import { ImporterPly } from "./importerply.js";
-import { ImporterOcct } from "./importerocct.js";
-import { ImporterStl } from "./importerstl.js";
-import { ImporterBim } from "./importerbim.js";
+import { RunTaskAsync } from '../core/taskrunner.js';
+import { FileSource, GetFileName } from '../io/fileutils.js';
+import { RGBColor } from '../model/color.js';
+import { ImporterFile, ImporterFileList } from './importerfiles.js';
+import { Importer3dm } from './importer3dm.js';
+import { Importer3ds } from './importer3ds.js';
+import { ImporterGltf } from './importergltf.js';
+import { ImporterIfc } from './importerifc.js';
+import { ImporterO3dv } from './importero3dv.js';
+import { ImporterObj } from './importerobj.js';
+import { ImporterOff } from './importeroff.js';
+import { ImporterPly } from './importerply.js';
+import { ImporterOcct } from './importerocct.js';
+import { ImporterStl } from './importerstl.js';
+import { ImporterBim } from './importerbim.js';
 import {
   ImporterThree3mf,
   ImporterThreeDae,
   ImporterThreeFbx,
   ImporterThreeWrl,
-} from "./importerthree.js";
+} from './importerthree.js';
 
-import * as fflate from "fflate";
+import * as fflate from 'fflate';
 
 export class ImportSettings {
   constructor() {
@@ -118,9 +118,6 @@ export class Importer {
   LoadFiles(inputFiles, callbacks) {
     let newFileList = new ImporterFileList();
     newFileList.FillFromInputFiles(inputFiles);
-
-    console.log("new FileList: " + newFileList);
-
     let reset = false;
     if (this.HasImportableFile(newFileList)) {
       reset = true;
@@ -162,22 +159,87 @@ export class Importer {
       let mainFile = importableFiles[0];
       this.ImportLoadedMainFile(mainFile, settings, callbacks);
     } else {
-      let fileNames = importableFiles.map(
-        (importableFile) => importableFile.file.name
-      );
-      callbacks.onSelectMainFile(fileNames, (mainFileIndex) => {
-        if (mainFileIndex === null) {
-          callbacks.onImportError(
-            new ImportError(ImportErrorCode.NoImportableFile)
-          );
-          return;
-        }
-        RunTaskAsync(() => {
-          let mainFile = importableFiles[mainFileIndex];
-          this.ImportLoadedMainFile(mainFile, settings, callbacks);
-        });
-      });
+      // let mainFile = importableFiles[0];
+      // this.ImportLoadedMainFile(mainFile, settings, callbacks);
+      this.ImportFilesIntoMainModel(importableFiles, settings, callbacks);
     }
+  }
+
+  ImportFilesIntoMainModel(files, settings, callbacks) {
+    if (
+      files === null ||
+      files[0].file === null ||
+      files[0].file.content === null
+    ) {
+      let error = new ImportError(ImportErrorCode.FailedToLoadFile);
+      callbacks.onImportError(error);
+      return;
+    }
+
+    this.model = null;
+    this.missingFiles = [];
+    this.usedFiles = [];
+
+    files.forEach(file => {
+      let fileAccessor = new ImporterFileAccessor((fileName) => {
+        let fileBuffer = null;
+        let data = this.fileList.FindFileByPath(fileName);
+        if (data === null || data.content === null) {
+          this.missingFiles.push(fileName);
+          fileBuffer = null;
+        } else {
+          this.usedFiles.push(fileName);
+          fileBuffer = file.content;
+        }
+        return fileBuffer;
+      });
+
+      file.importer.Import(
+        file.file.name,
+        file.file.extension,
+        file.file.content,
+        {
+          getDefaultMaterialColor: () => {
+            return settings.defaultColor;
+          },
+          getFileBuffer: (filePath) => {
+            return fileAccessor.GetFileBuffer(filePath);
+          },
+          onSuccess: () => {
+            let newModel = file.importer.GetModel();
+            if (this.model === null) {
+              newModel.meshes[0].name = file.file.name;
+              this.model = newModel;
+            }
+            else {
+              newModel.meshes.forEach(mesh => {
+                mesh.name = file.file.name;
+                this.model.AddMeshToRootNode(mesh);
+              });
+              newModel.materials.forEach(mat => {
+                mat.name = file.file.name;
+                this.model.AddMaterial(mat);
+              });
+            }
+          },
+          onError: () => {
+            let error = new ImportError(ImportErrorCode.ImportFailed);
+            error.mainFile = file.name;
+            error.message = file.importer.GetErrorMessage();
+            callbacks.onImportError(error);
+          },
+          onComplete: () => {
+            file.importer.Clear();
+          },
+        });
+    });
+    let result = new ImportResult();
+    result.mainFile = files[0].file.name;
+    result.model = this.model;
+    result.usedFiles = this.usedFiles;
+    result.missingFiles = this.missingFiles;
+    result.upVector = files[0].importer.GetUpDirection();
+    callbacks.onImportSuccess(result);
   }
 
   ImportLoadedMainFile(mainFile, settings, callbacks) {
@@ -251,7 +313,7 @@ export class Importer {
     let files = fileList.GetFiles();
     let archives = [];
     for (let file of files) {
-      if (file.extension === "zip") {
+      if (file.extension === 'zip') {
         archives.push(file);
       }
     }

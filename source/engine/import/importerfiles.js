@@ -55,7 +55,6 @@ export class ImporterFileList {
   FillFromInputFiles(inputFiles) {
     this.files = [];
     for (let inputFile of inputFiles) {
-      console.log("inputFiles: " + inputFile);
       let file = new ImporterFile(
         inputFile.name,
         inputFile.source,
@@ -139,8 +138,6 @@ export class ImporterFileList {
       loaderPromise = ReadFile(file.data, callbacks.onProgress);
     } else if (file.source === FileSource.Decompressed) {
       loaderPromise = new Promise((resolve, reject) => {
-        console.log("File Content prior : " + file.content);
-        console.log("File Data : " + file.data);
         file.content = file.data;
         resolve(file.data);
       });

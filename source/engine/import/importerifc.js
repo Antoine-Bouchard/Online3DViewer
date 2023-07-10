@@ -190,8 +190,6 @@ export class ImporterIfc extends ImporterBase
                             break;
                         default:
                             // TODO
-                            console.log (property.NominalValue.label);
-                            console.log (property.NominalValue.value);
                             break;
                     }
                     if (elemProperty !== null) {
