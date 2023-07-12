@@ -146,7 +146,7 @@ export class EmbeddedViewer {
     });
   }
 
-  AddMeshFromInputFiles(files, navigator) {
+  AddMeshFromInputFiles(files, navigator, callbacks) {
     if (files === null || files.length === 0) {
       return null;
     }
@@ -191,6 +191,7 @@ export class EmbeddedViewer {
           this.viewer.SetUpVector(Direction.Y, false);
           this.viewer.FitSphereToWindow(boundingSphere, false);
         }
+        callbacks?.onComplete();
       },
       onTextureLoaded: () => {
         this.viewer.Render();

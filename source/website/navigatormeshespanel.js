@@ -360,7 +360,6 @@ export class NavigatorMeshesPanel extends NavigatorPanel {
 
         function AddModelNodeToTree(panel, model, node, parentItem, mode) {
             let meshNodes = [];
-            console.log(node);
             for (let childNode of node.GetChildNodes()) {
                 if (mode === MeshesPanelMode.TreeView) {
                     if (childNode.GetType() === NodeType.GroupNode) {

@@ -65,7 +65,6 @@ export class ThreeModelLoader {
                             let rotation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1.0, 0.0, 0.0), -Math.PI / 2.0);
                             threeObject.quaternion.multiply(rotation);
                         }
-                        console.log(importResult, threeObject);
                         callbacks.onModelFinished(importResult, threeObject);
                         this.inProgress = false;
                     }
